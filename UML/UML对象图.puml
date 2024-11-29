@@ -1,0 +1,90 @@
+@startuml
+
+' 定义 TaskStatus 枚举类，用于设置任务的状态
+enum TaskStatus {
+    NOT_STARTED
+    READY_TO_START
+    IN_PROGRESS
+    COMPLETED
+}
+
+class User {
+    name = "张家宁"
+    prefersMinimalUI = true
+    forgetful = true
+}
+
+class Task {
+    title = "完成项目报告"
+    description = "编写并提交项目结题报告"
+    dueDate = "2024-11-10"
+    priority = HIGH
+    status = NOT_STARTED
+    + addDependency(Task task)
+    + addDerivedTask(Task task)
+    + updateStatus()
+}
+
+class HiddenTask {
+    title
+    description
+    dueDate
+    priority
+    status = NOT_STARTED
+    isHidden = true
+    + checkRevealCondition()
+    + revealTask()
+}
+
+class Reminder {
+    reminderTime = "2024-11-08 10:00"
+    reminderMessage = "请开始撰写报告"
+}
+
+class NotificationManager
+class SyncService
+
+class Category {
+    name = "Work"
+}
+
+class Priority {
+    HIGH
+}
+
+' 定义 CoupleAccount 类，用于情侣用户的任务共享和互动
+class CoupleAccount {
+    partnerA = "张家宁"
+    partnerB = "李雨璐"
+    + addSharedTask(Task task)
+    + setSharedReminder(Task task, Date reminderTime, String message)
+    + leaveMessage(String message)
+    + confirmTaskCompletion(Task task)
+    + addHiddenTask(HiddenTask task)
+}
+
+' 关系定义
+User -- Task : creates
+Task -- Reminder : has
+Task --> Priority : priority
+Task --> Category : belongs to
+Task --> TaskStatus : status
+User -- NotificationManager : manages
+NotificationManager -- Reminder : schedules
+User -- SyncService : syncs with
+SyncService -- Task : updates
+
+' 情侣账号与用户、任务的关系
+User "2" -- "1" CoupleAccount : links to
+CoupleAccount "1" -- "0..*" Task : shares
+CoupleAccount "1" -- "0..*" HiddenTask : adds hidden
+
+' 任务拓扑关系
+Task "0..*" --> "0..*" Task : depends on (前置任务)
+Task "0..*" --> "0..*" Task : derived from (派生任务)
+
+' 隐藏任务的依赖条件
+HiddenTask <|-- Task
+HiddenTask "0..*" --> "0..*" Task : requires completion of
+
+@enduml

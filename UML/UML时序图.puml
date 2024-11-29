@@ -1,0 +1,55 @@
+@startuml
+actor 用户
+participant "任务管理系统" as TaskManager
+participant "通知管理器" as NotificationManager
+
+用户 -> TaskManager : 打开任务单App
+用户 -> TaskManager : 创建新任务
+TaskManager -> 用户 : 提示输入任务信息
+用户 -> TaskManager : 输入标题、描述、截止日期等
+用户 -> TaskManager : 选择任务优先级和分类
+
+alt 是否需要提醒
+    用户 -> TaskManager : 设置提醒时间和内容
+    TaskManager -> NotificationManager : 创建提醒
+end
+
+alt 是否共享给伴侣
+    用户 -> TaskManager : 选择共享给伴侣
+    TaskManager -> NotificationManager : 发送共享通知
+end
+
+alt 是否创建为隐藏任务
+    用户 -> TaskManager : 选择创建为隐藏任务
+    TaskManager -> 用户 : 设置隐藏任务条件（前置任务完成 + 提醒时间到达）
+end
+
+TaskManager -> 用户 : 保存任务成功
+
+用户 -> TaskManager : 查看任务列表
+alt 按标签查看
+    用户 -> TaskManager : 选择标签
+    TaskManager -> 用户 : 显示该标签下的任务列表
+else 查看即将到期任务
+    TaskManager -> 用户 : 显示即将到期任务
+end
+
+alt 查看伴侣共享任务
+    用户 -> TaskManager : 查看伴侣共享任务
+    TaskManager -> 用户 : 显示伴侣共享的任务列表
+end
+
+用户 -> TaskManager : 选择完成的任务
+TaskManager -> 用户 : 更新任务状态为完成
+TaskManager -> 用户 : 从即将到期任务列表中移除
+
+alt 共享任务完成通知
+    TaskManager -> NotificationManager : 发送任务完成通知给伴侣
+end
+
+alt 存在隐藏任务且前置任务完成
+    NotificationManager -> TaskManager : 检查隐藏任务条件
+    TaskManager -> 用户 : 显示隐藏任务
+end
+
+@enduml

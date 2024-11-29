@@ -1,0 +1,123 @@
+@startuml
+
+' 定义 TaskStatus 枚举类，用于设置任务的状态
+enum TaskStatus {
+    NOT_STARTED
+    READY_TO_START
+    IN_PROGRESS
+    COMPLETED
+}
+
+' 更新 Task 类，加入状态管理
+class Task {
+    - String title
+    - String description
+    - Date ddl
+    - Priority priority
+    - List<String> labels
+    - TaskStatus status
+    + addReminder(Date time)
+    + markAsCompleted()
+    + setPriority(Priority priority)
+    + addLabel(String label)
+    + addDependency(Task task)
+    + addDerivedTask(Task task)
+    + updateStatus()
+}
+
+' 定义 HiddenTask 类，表示情侣间的隐藏任务
+class HiddenTask {
+    - Boolean isHidden = true
+    - Boolean isRevealed = false
+    + checkRevealCondition()
+    + revealTask()
+}
+
+' 定义 Priority 枚举类，用于设置任务的优先级
+enum Priority {
+    LOW
+    MEDIUM
+    HIGH
+}
+
+' 定义 Reminder 类，用于自定义提醒
+class Reminder {
+    - Date reminderTime
+    - String reminderMessage
+    + sendNotification()
+}
+
+' 定义 User 类，用于管理用户信息和偏好设置
+class User {
+    - String name
+    - Boolean prefersMinimalUI
+    - Boolean forgetful
+    - CoupleAccount couple
+    + createTask(String title, String description, Date dueDate, Priority priority)
+    + setReminder(Task task, Date reminderTime, String message)
+}
+
+' 定义 CoupleAccount 类，用于情侣用户的任务共享和互动
+class CoupleAccount {
+    - User partnerA
+    - User partnerB
+    - List<Task> sharedTasks
+    - List<HiddenTask> hiddenTasks
+    + addSharedTask(Task task)
+    + removeSharedTask(Task task)
+    + setSharedReminder(Task task, Date reminderTime, String message)
+    + addHiddenTask(HiddenTask task)
+}
+
+' 定义 Category 类，用于对任务进行分类
+class Category {
+    - String name
+    - List<Task> tasks
+    + addTask(Task task)
+    + removeTask(Task task)
+}
+
+' 定义 NotificationManager 类，处理通知相关的功能
+class NotificationManager {
+    + scheduleNotification(Reminder reminder)
+    + sendPushNotification(Task task)
+}
+
+' 定义 SyncService 类，用于任务多端同步
+class SyncService {
+    + syncData(User user)
+    + updateTaskStatus(Task task)
+}
+
+' 定义 HomeScreen 类，表示首页任务显示与滑动完成
+class HomeScreen {
+    + displayUpcomingTasks(List<Task> tasks)
+    + completeTaskWithSwipe(Task task)
+}
+
+' 关系定义
+User "1" -- "0..*" Task : creates
+Task "1" -- "0..*" Reminder : has
+Task "0..*" --> Priority : priority
+Task "0..*" --> "0..*" Category : belongs to
+User "1" -- "1" NotificationManager : manages
+NotificationManager "1" -- "0..*" Reminder : schedules
+User "1" -- "1" SyncService : syncs with
+SyncService "1" -- "0..*" Task : updates
+HomeScreen "1" -- "0..*" Task : displays
+Task "1" --> "1" TaskStatus : has
+
+' 情侣账号与用户、任务的关系
+User "2" -- "1" CoupleAccount : links to
+CoupleAccount "1" -- "0..*" Task : shares
+CoupleAccount "1" -- "0..*" HiddenTask : adds hidden
+
+' 任务拓扑关系
+Task "0..*" --> "0..*" Task : depends on (前置任务)
+Task "0..*" --> "0..*" Task : derived from (派生任务)
+
+' 隐藏任务的关系
+HiddenTask <|-- Task
+HiddenTask "0..*" --> "0..*" Task : requires completion of (前置任务)
+
+@enduml
